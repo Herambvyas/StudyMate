@@ -5,21 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>StudyMate AI</title>
 <meta name="description" content="Paste your notes and get a summary, flashcards, a quiz, a simple explanation or a study plan from Claude.">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body data-tool="summary">
 <div class="wrap">
-  <header>
-    <h1>Study<span class="mark">Mate</span> AI</h1>
-    <p class="tag">Paste your notes and get a revision summary, flashcards, a practice quiz, a simpler explanation or a day-by-day study plan.</p>
-  </header>
+
+  <div class="bar">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#2B55F5"/><path d="M9 8h10a4 4 0 0 1 4 4v12H13a4 4 0 0 1-4-4z" fill="#FFFFFF"/><rect x="11" y="14" width="11" height="5" rx="1.5" fill="#FFE14D"/></svg>
+      StudyMate AI
+    </div>
+    <button class="iconbtn" id="themeBtn" type="button" aria-label="Switch light or dark theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>
+      Theme
+    </button>
+  </div>
+
+  <section class="hero">
+    <h1>Turn messy notes into something you can <span class="mark">revise</span>.</h1>
+    <p class="lead">Paste a chapter. Get a summary, flashcards, a practice quiz, a plain-language explanation or a day-by-day plan. Works in English, Hindi and Hinglish.</p>
+  </section>
 
   <div id="banner" class="banner" hidden>Claude access was declined or is unavailable for this account.</div>
 
-  <section id="keybox" class="panel" hidden aria-labelledby="key-h">
-    <h2 id="key-h">Connect your Anthropic API key</h2>
-    <p class="note">This site has no server. Paste your own key from console.anthropic.com. It is saved only in this browser and sent only to api.anthropic.com. Use a key with a spending limit, and do not use this on a shared computer.</p>
+  <section id="keybox" class="panel keybox" hidden aria-labelledby="key-h">
+    <div class="ph"><h2 id="key-h">Connect your Anthropic API key</h2></div>
+    <p class="note">This site has no server. Paste your own key from console.anthropic.com. It is saved only in this browser and sent only to api.anthropic.com. Use a key with a spending limit and do not use this on a shared computer.</p>
     <div class="row">
       <div class="field"><label class="lbl" for="apiKey">API key</label>
         <input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-..."></div>
@@ -30,18 +42,17 @@
 
   <div class="grid">
     <section class="panel" aria-labelledby="in-h">
-      <h2 id="in-h">Your notes</h2>
-      <div class="field">
-        <label class="lbl" for="notes">Paste or type notes</label>
-        <textarea id="notes" spellcheck="true" placeholder="Paste a chapter, lecture notes or a topic outline here..."></textarea>
+      <div class="ph"><h2 id="in-h">Your notes</h2><span id="exTag" class="badge" hidden>Example notes</span></div>
+      <label class="lbl" for="notes">Paste or type</label>
+      <textarea id="notes" class="paper" spellcheck="true" placeholder="Paste a chapter, lecture notes or a topic outline here..."></textarea>
+      <div class="meta"><span id="count">0 words</span>
+        <span class="row">
+          <button class="btn small" id="fileBtn" type="button">Upload .txt / .md</button>
+          <button class="btn small" id="exBtn" type="button">Example</button>
+          <button class="btn small" id="clrBtn" type="button">Clear</button>
+        </span>
       </div>
-      <div class="meta"><span id="count">0 words</span><span id="exTag" class="badge" hidden>Example notes, replace with yours</span></div>
-      <div class="row">
-        <button class="btn small" id="fileBtn" type="button">Upload .txt / .md</button>
-        <input id="file" type="file" accept=".txt,.md,text/plain,text/markdown" hidden>
-        <button class="btn small" id="exBtn" type="button">Load example</button>
-        <button class="btn small" id="clrBtn" type="button">Clear</button>
-      </div>
+      <input id="file" type="file" accept=".txt,.md,text/plain,text/markdown" hidden>
       <div class="row">
         <div class="field">
           <label class="lbl" for="level">Level</label>
@@ -64,8 +75,8 @@
     </section>
 
     <section class="panel" aria-labelledby="out-h">
-      <h2 id="out-h">Study tools</h2>
-      <div class="tabs" role="tablist" id="tabs" aria-label="Study tools"></div>
+      <div class="ph"><h2 id="out-h">Study tools</h2></div>
+      <div class="tools" role="tablist" id="tabs" aria-label="Study tools"></div>
 
       <div class="opts">
         <div class="field" data-for="cards"><label class="lbl" for="nCards">Number of cards</label>
@@ -80,19 +91,21 @@
           </select></div>
         <div class="field" data-for="plan"><label class="lbl" for="days">Days until exam</label>
           <input id="days" type="number" min="1" max="30" value="5"></div>
-        <button class="btn primary" id="go" type="button">Generate</button>
+      </div>
+      <div class="cta">
+        <button class="go" id="go" type="button"><span id="goIcon"></span><span id="goLabel">Generate summary</span></button>
         <button class="btn" id="stop" type="button" hidden>Stop</button>
       </div>
       <div id="status" class="status" role="status" aria-live="polite"></div>
 
       <div id="out" class="out"></div>
       <div class="row" id="actions" hidden>
-        <button class="btn small" id="copy" type="button">Copy</button>
+        <button class="btn small" id="copy" type="button">Copy result</button>
         <span id="copied" class="note"></span>
       </div>
 
       <details class="lab" id="lab">
-        <summary>Prompt lab: see the prompt behind this tool</summary>
+        <summary>Prompt lab: the prompt behind this tool</summary>
         <div class="inner">
           <div class="chips" id="chips"></div>
           <pre class="prompt" id="promptView"></pre>
@@ -101,7 +114,10 @@
       </details>
     </section>
   </div>
+
+  <footer>Built for a Prompt Engineering course. Powered by Claude. AI can make mistakes, so check key facts in your textbook.</footer>
 </div>
+
 <script src="js/ai.js"></script>
 <script src="js/app.js"></script>
 </body>

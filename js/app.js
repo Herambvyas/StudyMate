@@ -10,12 +10,21 @@
     plan:     { label: "Study plan", json: false, chips: ["Role", "Rules", "Constraints", "Fixed format"] }
   };
   var EMPTY = {
-    summary: "<strong>Summary.</strong> A one-sentence big idea, key points, terms to remember and a likely exam question.",
-    cards: "<strong>Flashcards.</strong> Question and answer cards. Flip each one, mark it known or review it again.",
-    quiz: "<strong>Quiz.</strong> Multiple choice questions built from your notes, with an explanation after every answer.",
-    simplify: "<strong>Simplify.</strong> Your notes explained in plain words, with an analogy or as a dialogue.",
-    plan: "<strong>Study plan.</strong> Tell it how many days you have and get a plan with a self-test for each day."
+    summary: ["Revision summary", "A one-sentence big idea, key points, terms to remember and a likely exam question."],
+    cards: ["Flashcards", "Question and answer cards. Flip each one, then mark it known or review it again."],
+    quiz: ["Practice quiz", "Multiple choice questions built from your notes, with an explanation after every answer."],
+    simplify: ["Simple explanation", "Your notes in plain words, with an analogy, or as a short dialogue."],
+    plan: ["Study plan", "Tell it how many days you have and get a plan with a self-test for each day."]
   };
+  var ICONS = {
+    summary: '<path d="M5 6h14M5 12h14M5 18h9"/>',
+    cards: '<rect x="4" y="8" width="13" height="11" rx="2"/><path d="M8 5h11a1 1 0 0 1 1 1v10"/>',
+    quiz: '<circle cx="12" cy="12" r="8"/><path d="M8.5 12.2l2.4 2.4 4.6-5"/>',
+    simplify: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>',
+    plan: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>'
+  };
+  var VERB = { summary: "Generate summary", cards: "Make flashcards", quiz: "Build quiz", simplify: "Simplify my notes", plan: "Make study plan" };
+  function icon(k) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[k] + "</svg>"; }
 
   var ai = window.StudyAI;
   var mode = "summary";
@@ -33,7 +42,7 @@
       if (m) { if (!list) { out += "<ul>"; list = true; } out += "<li>" + inl(m[1]) + "</li>"; continue; }
       if (list) { out += "</ul>"; list = false; }
       var h = l.match(/^#{1,4}\s+(.*)/);
-      if (h) { out += "<h4>" + inl(h[1]) + "</h4>"; continue; }
+      if (h) { out += '<h4 class="h-' + h[1].toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "") + '">' + inl(h[1]) + "</h4>"; continue; }
       if (!l.trim()) continue;
       out += "<p>" + inl(l) + "</p>";
     }
@@ -71,7 +80,9 @@
   }
   function refreshLab() {
     $("chips").innerHTML = MODES[mode].chips.map(function (c) { return '<span class="chip">' + esc(c) + "</span>"; }).join("");
-    $("promptView").textContent = buildPrompt(mode, "[your notes appear here]");
+    var raw = esc(buildPrompt(mode, "[your notes appear here]"));
+    raw = raw.replace(/^(ROLE|RULES|NOTES|TASK|Format)(:)/gm, '<span class="kw">$1$2</span>').replace(/\[your notes appear here\]/, '<span class="pl">[your notes appear here]</span>');
+    $("promptView").innerHTML = raw;
   }
 
   /* ---------- UI shell ---------- */
@@ -80,7 +91,9 @@
     t.innerHTML = "";
     Object.keys(MODES).forEach(function (k) {
       var b = document.createElement("button");
-      b.type = "button"; b.className = "tab"; b.setAttribute("role", "tab"); b.dataset.mode = k; b.textContent = MODES[k].label;
+      b.type = "button"; b.className = "tool"; b.setAttribute("role", "tab"); b.dataset.mode = k;
+      b.style.setProperty("--c", "var(--t-" + k + ")"); b.style.setProperty("--ci", "var(--ti-" + k + ")");
+      b.innerHTML = '<span class="ti">' + icon(k) + "</span><span>" + esc(MODES[k].label) + "</span>";
       b.addEventListener("click", function () { mode = k; paint(); });
       t.appendChild(b);
     });
@@ -89,6 +102,9 @@
     Array.prototype.forEach.call($("tabs").children, function (b) { b.setAttribute("aria-selected", b.dataset.mode === mode ? "true" : "false"); });
     Array.prototype.forEach.call(document.querySelectorAll("[data-for]"), function (f) { f.hidden = f.dataset["for"] !== mode; });
     $("copied").textContent = "";
+    document.body.dataset.tool = mode;
+    $("goIcon").innerHTML = icon(mode);
+    $("goLabel").textContent = VERB[mode];
     refreshLab();
     renderOutput();
   }
@@ -97,7 +113,12 @@
   function renderOutput() {
     var out = $("out"), r = results[mode];
     $("actions").hidden = !r;
-    if (!r) { out.className = "out"; out.innerHTML = '<div class="empty">' + EMPTY[mode] + " Press <strong>Generate</strong>.</div>"; return; }
+    if (!r && busy) { out.className = "out"; out.innerHTML = '<div class="skel" aria-label="Loading"><i class="t"></i><i></i><i class="s"></i><i></i><i class="s"></i></div>'; return; }
+    if (!r) {
+      out.className = "out";
+      out.innerHTML = '<div class="empty"><div class="ico">' + icon(mode) + "</div><h3>" + esc(EMPTY[mode][0]) + "</h3><p>" + esc(EMPTY[mode][1]) + '</p><p class="hintline">Press "' + esc(VERB[mode]) + '" to try it on your notes.</p></div>';
+      return;
+    }
     out.className = "out has";
     if (mode === "cards") return renderCards(out, r);
     if (mode === "quiz") return renderQuiz(out, r);
@@ -107,7 +128,7 @@
   function renderCards(out, r) {
     var total = r.cards.length, left = r.queue.length, done = total - left;
     if (!left) {
-      out.innerHTML = '<p class="score">All ' + total + " cards done. Nice work.</p>";
+      out.innerHTML = '<div class="score"><span>All ' + total + " cards done. Nice work.</span></div>";
       var again = document.createElement("button"); again.className = "btn small"; again.type = "button"; again.textContent = "Study them again";
       again.onclick = function () { r.queue = r.cards.map(function (_, i) { return i; }); r.flip = false; renderOutput(); };
       out.appendChild(again); return;
@@ -115,9 +136,9 @@
     var c = r.cards[r.queue[0]];
     out.innerHTML = '<div class="cardwrap"><div class="meta"><span>Card ' + (done + 1) + " of " + total + '</span><span>' + done + ' known</span></div>' +
       '<div class="prog"><i style="width:' + Math.round(done / total * 100) + '%"></i></div>' +
-      '<button type="button" class="fc' + (r.flip ? " back" : "") + '" id="fc" aria-label="Flip card">' +
-      '<span class="side">' + (r.flip ? "Answer" : "Question") + '</span><span class="txt">' + esc(r.flip ? c.a : c.q) + '</span><span class="hint">' + (r.flip ? "" : "Tap to see the answer") + "</span></button>" +
-      '<div class="row"><button type="button" class="btn" id="again">Review again</button><button type="button" class="btn primary" id="know">I know this</button></div></div>';
+      '<div class="stack"><button type="button" class="fc' + (r.flip ? " back" : "") + '" id="fc" aria-label="Flip card">' +
+      '<span class="side">' + (r.flip ? "Answer" : "Question") + '</span><span class="txt">' + esc(r.flip ? c.a : c.q) + '</span><span class="hint">' + (r.flip ? "" : "Tap the card to see the answer") + "</span></button></div>" +
+      '<div class="row"><button type="button" class="btn again" id="again">Review again</button><button type="button" class="btn primary" id="know">I know this</button></div></div>';
     $("fc").onclick = function () { r.flip = !r.flip; renderOutput(); };
     $("know").onclick = function () { r.queue.shift(); r.flip = false; renderOutput(); };
     $("again").onclick = function () { r.queue.push(r.queue.shift()); r.flip = false; renderOutput(); };
@@ -126,14 +147,14 @@
   function renderQuiz(out, r) {
     var answered = 0, score = 0;
     r.qs.forEach(function (q, i) { if (r.picked[i] !== undefined) { answered++; if (r.picked[i] === q.answer) score++; } });
-    var html = '<p class="score">' + (answered === r.qs.length ? "Final score: " : "Score so far: ") + score + " / " + r.qs.length + "</p>";
+    var html = '<div class="score"><span>' + (answered === r.qs.length ? "Final score" : "Score") + ": " + score + " / " + r.qs.length + "</span><span>" + (r.qs.length - answered) + " left</span></div>";
     r.qs.forEach(function (q, i) {
       var p = r.picked[i];
       html += '<div class="q"><h5>' + (i + 1) + ". " + esc(q.question) + "</h5>";
       q.options.forEach(function (o, j) {
         var cls = "opt";
         if (p !== undefined) { if (j === q.answer) cls += " ok"; else if (j === p) cls += " no"; }
-        html += '<button type="button" class="' + cls + '" data-q="' + i + '" data-o="' + j + '"' + (p !== undefined ? " disabled" : "") + ">" + esc(o) + "</button>";
+        html += '<button type="button" class="' + cls + '" data-q="' + i + '" data-o="' + j + '"' + (p !== undefined ? " disabled" : "") + '><span class="ltr">' + String.fromCharCode(65 + j) + "</span><span>" + esc(o) + "</span></button>";
       });
       if (p !== undefined && q.explanation) html += '<p class="why">' + esc(q.explanation) + "</p>";
       html += "</div>";
@@ -167,7 +188,7 @@
     if (notes.length < 80) { setStatus("Add a few lines of notes first (at least 80 characters).", true); return; }
     var m = mode, prompt = buildPrompt(m, notes);
     ctl = new AbortController();
-    setBusy(true); setStatus("Thinking...");
+    setBusy(true); setStatus("Thinking..."); renderOutput();
     try {
       if (MODES[m].json) {
         var data = await ai.json(prompt, { signal: ctl.signal });
@@ -272,7 +293,16 @@
       ai.setKey(v); $("apiKey").value = ""; setStatus("API key saved in this browser."); showKeyState();
     };
     $("forgetKey").onclick = function () { ai.clearKey(); setStatus("API key removed from this browser."); showKeyState(); };
-    ai.init().then(showKeyState);
+    var THEME_KEY = "studymate-theme";
+    try { var th = localStorage.getItem(THEME_KEY); if (th === "light" || th === "dark") document.documentElement.dataset.theme = th; } catch (e) {}
+    $("themeBtn").onclick = function () {
+      var t = document.documentElement.dataset.theme;
+      var dark = t ? t === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      var next = dark ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+    };
+    ai.init().then(function () { showKeyState(); if (ai.mode() === "claude") $("themeBtn").hidden = true; });
   }
   init();
 })();
