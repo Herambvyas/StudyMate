@@ -81,7 +81,34 @@ button { font: inherit; cursor: pointer; color: inherit; }
 .iconbtn:hover { background: var(--surface-2); }
 
 /* hero */
-.hero { display: flex; flex-direction: column; gap: 10px; padding-top: 6px; }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; padding-top: 6px; align-items: center; }
+.herotext { display: flex; flex-direction: column; gap: 12px; }
+.collage { display: none; }
+@media (min-width: 940px) {
+  .wrap { max-width: 1240px; gap: 28px; }
+  body { font-size: 16px; padding-block: 22px 48px; }
+  .hero { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 40px; padding-top: 18px; }
+  h1 { font-size: clamp(3rem, 4.6vw, 4.2rem); max-width: 14ch; }
+  .lead { font-size: 1.12rem; }
+  .collage { display: block; position: relative; height: 400px; }
+  .cc { position: absolute; width: 262px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow), 0 18px 40px rgba(14, 26, 58, 0.08); }
+  .cc p { margin: 8px 0 0; font-family: var(--font-display); font-size: 1.05rem; line-height: 1.3; letter-spacing: -0.01em; }
+  .cc small { display: block; margin-top: 10px; color: var(--muted); font-size: 0.78rem; }
+  .tag-s { display: inline-block; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 3px 10px; border-radius: 999px; }
+  .c-sum { top: 0; left: 0; transform: rotate(-3.5deg); border-top: 5px solid var(--t-summary); }
+  .c-sum .tag-s { background: var(--t-summary); color: var(--ti-summary); }
+  .c-card { top: 118px; right: 0; transform: rotate(3deg); border-top: 5px solid var(--t-cards); z-index: 2; }
+  .c-card .tag-s { background: var(--t-cards); color: var(--ti-cards); }
+  .c-quiz { bottom: 0; left: 8px; transform: rotate(-1.5deg); border-top: 5px solid var(--t-quiz); z-index: 3; }
+  .c-quiz b { display: block; font-family: var(--font-display); font-size: 0.98rem; line-height: 1.3; margin-bottom: 10px; }
+  .c-quiz .o { display: block; padding: 7px 11px; margin-bottom: 6px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface-2); font-size: 0.88rem; font-weight: 500; }
+  .c-quiz .o.ok { background: var(--good-bg); border-color: var(--good); color: var(--good); font-weight: 700; }
+  .paper { min-height: 440px; font-size: 1rem; }
+  .panel { padding: 22px; border-radius: 20px; }
+  .tool { padding: 14px 6px 12px; font-size: 0.88rem; }
+  .tool .ti { width: 44px; height: 44px; }
+  .out { padding: 24px; min-height: 300px; }
+}
 h1 { font-family: var(--font-display); font-size: clamp(2rem, 7vw, 3.4rem); line-height: 1.04; letter-spacing: -0.03em; margin: 0; max-width: 18ch; text-wrap: balance; }
 .mark { background: linear-gradient(transparent 58%, var(--hl) 58%, var(--hl) 92%, transparent 92%); padding: 0 4px; margin: 0 -4px; }
 .lead { color: var(--muted); margin: 0; max-width: 56ch; font-size: 1.02rem; }
