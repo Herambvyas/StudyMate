@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StudyMate AI</title>
+<meta name="description" content="Paste your notes and get a summary, flashcards, a quiz, a simple explanation or a study plan from Claude.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Study<span class="mark">Mate</span> AI</h1>
+    <p class="tag">Paste your notes and get a revision summary, flashcards, a practice quiz, a simpler explanation or a day-by-day study plan.</p>
+  </header>
+
+  <div id="banner" class="banner" hidden>Claude access was declined or is unavailable for this account.</div>
+
+  <section id="keybox" class="panel" hidden aria-labelledby="key-h">
+    <h2 id="key-h">Connect your Anthropic API key</h2>
+    <p class="note">This site has no server. Paste your own key from console.anthropic.com. It is saved only in this browser and sent only to api.anthropic.com. Use a key with a spending limit, and do not use this on a shared computer.</p>
+    <div class="row">
+      <div class="field"><label class="lbl" for="apiKey">API key</label>
+        <input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-..."></div>
+      <button class="btn primary" id="saveKey" type="button">Save key</button>
+    </div>
+  </section>
+  <div id="keyInfo" class="row" hidden><span class="note">API key saved in this browser.</span><button class="btn small" id="forgetKey" type="button">Remove key</button></div>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="in-h">
+      <h2 id="in-h">Your notes</h2>
+      <div class="field">
+        <label class="lbl" for="notes">Paste or type notes</label>
+        <textarea id="notes" spellcheck="true" placeholder="Paste a chapter, lecture notes or a topic outline here..."></textarea>
+      </div>
+      <div class="meta"><span id="count">0 words</span><span id="exTag" class="badge" hidden>Example notes, replace with yours</span></div>
+      <div class="row">
+        <button class="btn small" id="fileBtn" type="button">Upload .txt / .md</button>
+        <input id="file" type="file" accept=".txt,.md,text/plain,text/markdown" hidden>
+        <button class="btn small" id="exBtn" type="button">Load example</button>
+        <button class="btn small" id="clrBtn" type="button">Clear</button>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label class="lbl" for="level">Level</label>
+          <select id="level">
+            <option>School</option>
+            <option selected>Undergraduate</option>
+            <option>Competitive exam prep</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="lbl" for="lang">Reply language</label>
+          <select id="lang">
+            <option selected>English</option>
+            <option>Hinglish</option>
+            <option>Hindi</option>
+          </select>
+        </div>
+      </div>
+      <p class="note">Notes stay in this browser. Each AI request uses your own Claude or API usage.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="out-h">
+      <h2 id="out-h">Study tools</h2>
+      <div class="tabs" role="tablist" id="tabs" aria-label="Study tools"></div>
+
+      <div class="opts">
+        <div class="field" data-for="cards"><label class="lbl" for="nCards">Number of cards</label>
+          <select id="nCards"><option>6</option><option selected>10</option><option>15</option></select></div>
+        <div class="field" data-for="quiz"><label class="lbl" for="nQuiz">Questions</label>
+          <select id="nQuiz"><option>5</option><option selected>8</option><option>10</option></select></div>
+        <div class="field" data-for="simplify"><label class="lbl" for="style">Explain it</label>
+          <select id="style">
+            <option value="like I am 10 years old, with very short sentences">Like I am 10</option>
+            <option value="using one strong real-life analogy from daily life in India">With a real-life analogy</option>
+            <option value="as a short friendly dialogue between a student and a tutor">As a dialogue</option>
+          </select></div>
+        <div class="field" data-for="plan"><label class="lbl" for="days">Days until exam</label>
+          <input id="days" type="number" min="1" max="30" value="5"></div>
+        <button class="btn primary" id="go" type="button">Generate</button>
+        <button class="btn" id="stop" type="button" hidden>Stop</button>
+      </div>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+
+      <div id="out" class="out"></div>
+      <div class="row" id="actions" hidden>
+        <button class="btn small" id="copy" type="button">Copy</button>
+        <span id="copied" class="note"></span>
+      </div>
+
+      <details class="lab" id="lab">
+        <summary>Prompt lab: see the prompt behind this tool</summary>
+        <div class="inner">
+          <div class="chips" id="chips"></div>
+          <pre class="prompt" id="promptView"></pre>
+          <p class="note">This is the exact text sent to Claude, with your notes shown as a placeholder. Change the level, language or options and it updates.</p>
+        </div>
+      </details>
+    </section>
+  </div>
+</div>
+<script src="js/ai.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
