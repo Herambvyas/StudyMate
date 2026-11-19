@@ -181,6 +181,14 @@
   };
   function setBusy(b) { busy = b; $("go").disabled = b; $("stop").hidden = !b; }
 
+  var used = 0;
+  try { used = parseInt(sessionStorage.getItem("studymate-used"), 10) || 0; } catch (e) {}
+  function renderUsage() { $("usageN").textContent = String(used); }
+  function bumpUsage() {
+    used++; renderUsage();
+    try { sessionStorage.setItem("studymate-used", String(used)); } catch (e) {}
+  }
+
   async function generate() {
     if (busy) return;
     if (!ai.ready()) { setStatus("Add your Anthropic API key above first.", true); $("keybox").hidden = false; $("apiKey").focus(); return; }
@@ -188,7 +196,7 @@
     if (notes.length < 80) { setStatus("Add a few lines of notes first (at least 80 characters).", true); return; }
     var m = mode, prompt = buildPrompt(m, notes);
     ctl = new AbortController();
-    setBusy(true); setStatus("Thinking..."); renderOutput();
+    setBusy(true); setStatus("Thinking..."); renderOutput(); bumpUsage();
     try {
       if (MODES[m].json) {
         var data = await ai.json(prompt, { signal: ctl.signal });
@@ -263,7 +271,7 @@
     try { saved = localStorage.getItem("studymate-notes"); opts = JSON.parse(localStorage.getItem("studymate-opts") || "null"); } catch (e) {}
     $("notes").value = saved !== null && saved !== "" ? saved : EXAMPLE;
     if (opts) { if (opts.level) $("level").value = opts.level; if (opts.lang) $("lang").value = opts.lang; }
-    updateCount(); paint();
+    updateCount(); paint(); renderUsage();
 
     $("notes").addEventListener("input", function () { updateCount(); persist(); });
     ["level", "lang", "nCards", "nQuiz", "style", "days"].forEach(function (id) { $(id).addEventListener("change", function () { refreshLab(); persist(); }); });

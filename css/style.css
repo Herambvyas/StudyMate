@@ -147,6 +147,9 @@ select, input[type="number"], input[type="password"] {
 
 @media (min-width: 940px) { .grid > .panel:first-child { position: sticky; top: 16px; } }
 
+.usage { align-self: flex-start; font-size: 0.8rem; color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; margin-top: -6px; }
+.usage b { color: var(--fg); font-variant-numeric: tabular-nums; }
+
 /* output */
 .out { position: relative; border: 1px solid var(--line); border-top: 4px solid var(--tool); border-radius: 12px; padding: 18px; min-height: 230px; background: var(--surface-2); overflow-wrap: anywhere; animation: rise 0.25s ease-out; }
 @keyframes rise { from { opacity: 0.4; transform: translateY(4px); } }

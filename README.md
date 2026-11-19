@@ -14,7 +14,7 @@ Built as a project for the Prompt Engineering course. The app has a **Prompt lab
 | Simplify | Explains the notes like you are 10, with an analogy, or as a dialogue | Streamed text |
 | Study plan | A plan for the number of days you have, with a self-test per day | Streamed text |
 
-Also: Hindi, Hinglish and English replies, three study levels, `.txt` / `.md` upload, copy to clipboard, light and dark theme, works on phones. Notes are saved only in your browser.
+Also: a "Requests this session" counter (each Generate spends a little of your Claude or API usage), Hindi, Hinglish and English replies, three study levels, `.txt` / `.md` upload, copy to clipboard, light and dark theme, works on phones. Notes are saved only in your browser.
 
 ## Prompt engineering techniques used
 
